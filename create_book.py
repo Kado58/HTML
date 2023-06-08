@@ -6,7 +6,7 @@ data = {"title": "In Search of Lost Time",
         "author": "Marcel Proust",
         }
 
-url = "http://localhost:5000/api/books/create"
+url = "http://localhost:5000/POST/api/books"
 response = requests.post(url, data=data)
 
 movie = response.json()

@@ -7,12 +7,13 @@ import requests
 
 book_catalog_service = Blueprint('book_catalog_service', __name__)
 
-
 @book_catalog_service.route("/GET/api/books", methods=["GET"])
 def read():
     id = request.args.get("id")
     if id:
         book = Book.query.get(id)
+        if book == None:
+            return jsonify({"message": f"There is no book which has this ID:{id}"})
         return jsonify(book.to_dict()), 200
 
     title = request.args.get("title")
@@ -62,13 +63,6 @@ def api_books_create():
     author = request.form.get("author")
 
     if title and publication_year and author:
-        """new_book = Book(
-            title=title,
-            publication_year=publication_year,
-            author=author
-        ) 
-        db.session.add(new_book)
-        db.session.commit()"""
         return jsonify(Book.create_book(title=title,
                                         publication_year=publication_year,
                                         author=author))  # new_book.to_dict())
