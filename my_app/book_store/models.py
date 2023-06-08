@@ -7,7 +7,6 @@ class Book(db.Model):
     title = db.Column(db.String(80), nullable=False)
     author = db.Column(db.String(50), nullable=False)
     publication_year = db.Column(db.Integer, nullable=False)
-    #inventory_id = db.Column(db.Integer, db.ForeignKey('inventory.id'))
     inventory = db.relationship('Inventory', backref='book', lazy=True)
     book_order = db.relationship('BookOrder', backref='book', lazy=True)
 
@@ -32,7 +31,7 @@ class Book(db.Model):
         db.session.add(new_book)
         db.session.commit()
         initial_inventory = Inventory(
-            book=new_book, quantity=0, available_quantity=0)
+            book=new_book, quantity=0)
         db.session.add(initial_inventory)
         db.session.commit()
         return new_book.to_dict()
@@ -44,29 +43,26 @@ class Book(db.Model):
 class Inventory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
-    quantity = db.Column(db.Integer, nullable=False)
-    available_quantity = db.Column(db.Integer, nullable=False, default=0)
+    quantity = db.Column(db.Integer, nullable=False, default=0)
 
-    def __init__(self, book, quantity, available_quantity):
+    def __init__(self, book, quantity):
         self.book = book
         self.quantity = quantity
-        self.available_quantity = available_quantity
 
     def to_dict(self):
         inventory_dict = {
             "id": self.id,
             "book_id": self.book_id,
-            "quantity": self.quantity,
-            "available_quantity": self.available_quantity,
+            "quantity": self.quantity
         }
         return inventory_dict
 
-    def update_available_quantity(self, quantity):
-        self.available_quantity += quantity
+    def update_quantity(self, quantity):
+        self.quantity += quantity
         db.session.commit()
 
     def __repr__(self):
-        return f'<Inventory {self.available_quantity}>'
+        return f'<Inventory {self.quantity}>'
 
 
 class BookOrder(db.Model):
@@ -83,7 +79,7 @@ class BookOrder(db.Model):
         pass
 
     def delete(self):
-        inventory = self.book.inventory
+        inventory:Inventory = self.book.inventory
         if inventory:
             inventory.quantity -= self.quantity_ordered
             db.session.delete(self)
